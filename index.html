@@ -2,48 +2,146 @@
 <html lang="en">
 <head>
   <meta charset="utf-8"/>
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"
-  />
-  <title>JDB Spin Masters (Wrapper)</title>
+  <!-- Critical: the outer page controls mobile scaling -->
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#000000" />
+  <title>JDB Spin Masters</title>
+
+  <!-- Match GAS font so outer/inner render the same -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+
   <style>
-    :root { --app-h: 100svh; }
-    html, body {
-      margin: 0;
-      padding: 0;
-      background: #000;
-      height: 100%;
-      -webkit-text-size-adjust: none;
-      text-size-adjust: none;
+    /* --- Match GAS color tokens so wrapper looks identical --- */
+    :root{
+      --bg-primary:#000000;
+      --bg-container:linear-gradient(135deg,#1a1a1a,#2a2a2a);
+      --red-accent:#FF0000;
+      --gold-accent:#FFD700;
+      --orange-accent:#FFA500;
+      --white-accent:#ffffff;
+      --shadow-red:rgba(255,0,0,.7);
+      --shadow-gold:rgba(255,215,0,.7);
+      --shadow-orange:rgba(255,165,0,.5);
+      --app-h:100svh; /* will be overridden by JS to visualViewport */
     }
-    iframe {
-      display: block;
-      width: 100%;
-      height: var(--app-h);
-      border: 0;
-      background: #000;
+
+    /* Kill mobile text inflation so outer page size == inner page size */
+    html, body, * {
+      -webkit-text-size-adjust: 100% !important; /* or none; try 100% first */
+      text-size-adjust: 100% !important;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body{
+      margin:0;
+      height:100%;
+      font-family:'Inter','Trebuchet MS',system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+      background:var(--bg-primary);
+      color:var(--white-accent);
+    }
+
+    /* Frame shell that matches your GAS layout width + padding */
+    .page{
+      min-height:100%;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      background-image:linear-gradient(45deg, rgba(255,255,255,.02), rgba(128,128,128,.02));
+      padding:env(safe-area-inset-top, 0) 0 env(safe-area-inset-bottom, 0);
+    }
+
+    /* Optional top “chrome” so the page background matches while iframe loads */
+    .chrome{
+      width:100%;
+      max-width:1200px;
+      padding:20px 20px 0;
+      box-sizing:border-box;
+    }
+
+    /* The actual iframe wrapper – keep it visually aligned with GAS app */
+    .frame-wrap{
+      width:100%;
+      max-width:1200px;
+      height:var(--app-h);
+      box-sizing:border-box;
+      padding:0 20px 20px;
+    }
+
+    iframe#gas{
+      display:block;
+      width:100%;
+      height:100%;
+      border:0;
+      background:#000; /* matches app background */
+      border-radius:10px; /* optional: echoes your card radius */
+    }
+
+    /* Small helper “skeleton” while iframe paints (purely optional) */
+    .skeleton{
+      height:12px; width:140px; border-radius:6px;
+      background:linear-gradient(90deg,#1c1c1c,#262626,#1c1c1c);
+      background-size:200% 100%;
+      animation:shimmer 1.2s linear infinite;
+      margin:0 0 12px 20px;
+      opacity:.6;
+    }
+    @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+    /* Mobile fine-tuning */
+    @media (max-width: 600px){
+      .frame-wrap{ padding:0 12px 12px; }
+      iframe#gas{ border-radius:8px; }
     }
   </style>
 </head>
 <body>
-  <iframe
-    id="gas"
-    src="https://script.google.com/macros/s/AKfycby11IrW8_nfgTalKTG61yVAiNM95WXCEJ7HANleV17R_YH4dCvPK66Q2_fQUhAKXcSuwg/exec"
-    title="JDB Spin Masters"
-    loading="eager"
-    allow="clipboard-read; clipboard-write; fullscreen *"
-  ></iframe>
+  <div class="page">
+    <!-- Optional: a tiny skeleton so the page looks consistent before iframe is ready -->
+    <div class="chrome">
+      <div class="skeleton"></div>
+    </div>
+
+    <div class="frame-wrap">
+      <iframe
+        id="gas"
+        title="JDB Spin Masters"
+        src="https://script.google.com/macros/s/AKfycby11IrW8_nfgTalKTG61yVAiNM95WXCEJ7HANleV17R_YH4dCvPK66Q2_fQUhAKXcSuwg/exec"
+        referrerpolicy="no-referrer"
+        allow="clipboard-read; clipboard-write; fullscreen *"
+        loading="eager"
+      ></iframe>
+    </div>
+  </div>
 
   <script>
-    // Keep iframe at visual viewport height on phones
-    function setHeight() {
-      const h = (window.visualViewport && window.visualViewport.height) || window.innerHeight;
-      document.documentElement.style.setProperty('--app-h', h + 'px');
+    // Keep iframe height synced to the *visual* viewport (works better on iOS)
+    function setAppHeight(){
+      const vh = (window.visualViewport && window.visualViewport.height) || window.innerHeight;
+      document.documentElement.style.setProperty('--app-h', vh + 'px');
     }
-    setHeight();
-    window.addEventListener('resize', setHeight);
-    window.addEventListener('orientationchange', setHeight);
+    setAppHeight();
+    window.addEventListener('resize', setAppHeight);
+    window.addEventListener('orientationchange', setAppHeight);
+
+    // If the GAS app posts its height, respect it (nice if content is taller than 1 screen)
+    window.addEventListener('message', (ev) => {
+      const d = ev.data || {};
+      if (d.type === 'GAS_APP_HEIGHT' && Number.isFinite(d.height)) {
+        const px = Math.max(400, Math.min(d.height, 5000));
+        document.getElementById('gas').style.height = px + 'px';
+        document.documentElement.style.setProperty('--app-h', px + 'px');
+      }
+    });
+
+    // Ask the child to compute its height after load/resize (works only if child implements it)
+    const gas = document.getElementById('gas');
+    function requestChildSize(){
+      try { gas.contentWindow && gas.contentWindow.postMessage({type:'REQUEST_GAS_APP_HEIGHT'}, '*'); } catch(e){}
+    }
+    gas.addEventListener('load', requestChildSize);
+    window.addEventListener('resize', requestChildSize);
+    window.addEventListener('orientationchange', requestChildSize);
   </script>
 </body>
 </html>
