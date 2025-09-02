@@ -19,21 +19,6 @@
       height: 100vh;
       background: #000;
     }
-
-    /* Mobile: shrink layout instead of transform */
-    @media (max-width: 768px) {
-      iframe {
-        zoom: 0.5;                 /* Standard zoom */
-        -moz-transform: scale(0.5); /* Firefox fallback */
-        -moz-transform-origin: 0 0;
-        -o-transform: scale(0.5);   /* Old Opera */
-        -o-transform-origin: 0 0;
-        -webkit-transform: scale(0.5); /* WebKit */
-        -webkit-transform-origin: 0 0;
-        width: 200vw;   /* double width so scaled content fills */
-        height: 200vh;  /* double height */
-      }
-    }
   </style>
 </head>
 <body>
