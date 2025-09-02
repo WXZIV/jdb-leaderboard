@@ -2,11 +2,32 @@
 <html lang="en">
 <head>
   <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
   <title>JDB Spin Masters</title>
   <style>
-    html,body{height:100%;margin:0;background:#000}
-    iframe{border:0;width:100vw;height:100vh;display:block;background:#000}
+    html, body {
+      height: 100%;
+      margin: 0;
+      background: #000;
+      overflow: hidden;
+    }
+    iframe {
+      border: 0;
+      width: 100vw;
+      height: 100vh;
+      display: block;
+      background: #000;
+      transform-origin: top left; /* important for scaling */
+    }
+
+    /* Mobile: zoom out to 50% */
+    @media (max-width: 768px) {
+      iframe {
+        transform: scale(0.5);
+        width: 200vw;   /* compensate so it still fills horizontally */
+        height: 200vh;  /* compensate so it still fills vertically */
+      }
+    }
   </style>
 </head>
 <body>
@@ -14,7 +35,7 @@
     src="https://script.google.com/macros/s/AKfycby11IrW8_nfgTalKTG61yVAiNM95WXCEJ7HANleV17R_YH4dCvPK66Q2_fQUhAKXcSuwg/exec"
     referrerpolicy="no-referrer"
     sandbox="allow-scripts allow-same-origin"
-    allow="clipboard-read; clipboard-write"
-  ></iframe>
+    allow="clipboard-read; clipboard-write">
+  </iframe>
 </body>
 </html>
