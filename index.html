@@ -2,19 +2,60 @@
 <html lang="en">
 <head>
   <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>JDB Spin Masters</title>
   <style>
-    html,body{height:100%;margin:0;background:#000}
-    iframe{border:0;width:100vw;height:100vh;display:block;background:#000}
+    :root { --app-h: 100svh; }  /* mobile-safe viewport */
+    html, body {
+      height: 100%;
+      margin: 0;
+      background: #000;
+    }
+    .frame-wrap {
+      height: var(--app-h);
+    }
+    iframe#gas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      border: 0;
+      background: #000;
+      border-radius: 0;
+    }
   </style>
 </head>
 <body>
-  <iframe
-    src="https://script.google.com/macros/s/AKfycby11IrW8_nfgTalKTG61yVAiNM95WXCEJ7HANleV17R_YH4dCvPK66Q2_fQUhAKXcSuwg/exec"
-    referrerpolicy="no-referrer"
-    sandbox="allow-scripts allow-same-origin"
-    allow="clipboard-read; clipboard-write"
-  ></iframe>
+  <div class="frame-wrap">
+    <iframe
+      id="gas"
+      title="JDB Spin Masters"
+      src="https://script.google.com/macros/s/AKfycby11IrW8_nfgTalKTG61yVAiNM95WXCEJ7HANleV17R_YH4dCvPK66Q2_fQUhAKXcSuwg/exec"
+      referrerpolicy="no-referrer"
+      allow="clipboard-read; clipboard-write; fullscreen *"
+      loading="eager">
+    </iframe>
+  </div>
+
+  <script>
+    // Auto-resize when the Apps Script page posts its height
+    const iframe = document.getElementById('gas');
+
+    window.addEventListener('message', (ev) => {
+      const d = ev.data || {};
+      if (d.type === 'GAS_APP_HEIGHT' && Number.isFinite(d.height)) {
+        const px = Math.max(400, Math.min(d.height, 5000));
+        iframe.style.height = px + 'px';
+        document.documentElement.style.setProperty('--app-h', px + 'px');
+      }
+    });
+
+    // Ask child to recompute on resize/orientation changes
+    const request = () => iframe.contentWindow?.postMessage(
+      { type: 'REQUEST_GAS_APP_HEIGHT' },
+      '*'
+    );
+    window.addEventListener('resize', request);
+    window.addEventListener('orientationchange', request);
+  </script>
 </body>
 </html>
