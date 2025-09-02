@@ -6,26 +6,32 @@
   <title>JDB Spin Masters</title>
   <style>
     html, body {
-      height: 100%;
       margin: 0;
+      padding: 0;
+      height: 100%;
       background: #000;
-      overflow: hidden;
-    }
-    iframe {
-      border: 0;
-      width: 100vw;
-      height: 100vh;
-      display: block;
-      background: #000;
-      transform-origin: top left; /* important for scaling */
     }
 
-    /* Mobile: zoom out to 50% */
+    iframe {
+      border: 0;
+      display: block;
+      width: 100vw;
+      height: 100vh;
+      background: #000;
+    }
+
+    /* Mobile: shrink layout instead of transform */
     @media (max-width: 768px) {
       iframe {
-        transform: scale(0.5);
-        width: 200vw;   /* compensate so it still fills horizontally */
-        height: 200vh;  /* compensate so it still fills vertically */
+        zoom: 0.5;                 /* Standard zoom */
+        -moz-transform: scale(0.5); /* Firefox fallback */
+        -moz-transform-origin: 0 0;
+        -o-transform: scale(0.5);   /* Old Opera */
+        -o-transform-origin: 0 0;
+        -webkit-transform: scale(0.5); /* WebKit */
+        -webkit-transform-origin: 0 0;
+        width: 200vw;   /* double width so scaled content fills */
+        height: 200vh;  /* double height */
       }
     }
   </style>
@@ -34,8 +40,8 @@
   <iframe
     src="https://script.google.com/macros/s/AKfycby11IrW8_nfgTalKTG61yVAiNM95WXCEJ7HANleV17R_YH4dCvPK66Q2_fQUhAKXcSuwg/exec"
     referrerpolicy="no-referrer"
-    sandbox="allow-scripts allow-same-origin"
-    allow="clipboard-read; clipboard-write">
+    sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-popups-to-escape-sandbox"
+    allow="clipboard-read; clipboard-write; fullscreen *">
   </iframe>
 </body>
 </html>
