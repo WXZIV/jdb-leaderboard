@@ -1,19 +1,26 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta charset="utf-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover, user-scalable=no"
+  />
   <title>JDB Spin Masters</title>
   <style>
-    :root { --app-h: 100svh; }  /* mobile-safe viewport */
+    :root { --app-h: 100svh; }          /* mobile-safe viewport unit */
+
     html, body {
       height: 100%;
       margin: 0;
-      background: #000;
+      background: #000;                 /* page background behind the frame */
+      -webkit-text-size-adjust: none;   /* avoid iOS zooming this wrapper */
+      text-size-adjust: none;
     }
-    .frame-wrap {
-      height: var(--app-h);
-    }
+
+    .frame-wrap { height: var(--app-h); }
+
+    /* The iframe fills the screen height; we can still override via postMessage */
     iframe#gas {
       display: block;
       width: 100%;
@@ -32,30 +39,42 @@
       src="https://script.google.com/macros/s/AKfycby11IrW8_nfgTalKTG61yVAiNM95WXCEJ7HANleV17R_YH4dCvPK66Q2_fQUhAKXcSuwg/exec"
       referrerpolicy="no-referrer"
       allow="clipboard-read; clipboard-write; fullscreen *"
+      <!-- If you want extra isolation, uncomment sandbox.
+           Note: Apps Script needs scripts; popups are optional. -->
+      <!-- sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox" -->
       loading="eager">
     </iframe>
   </div>
 
   <script>
-    // Auto-resize when the Apps Script page posts its height
     const iframe = document.getElementById('gas');
 
+    /* 1) Keep the wrapper’s CSS height equal to the visible viewport on mobiles */
+    const setAppH = () => {
+      const h = (window.visualViewport && window.visualViewport.height) || window.innerHeight;
+      document.documentElement.style.setProperty('--app-h', h + 'px');
+    };
+    setAppH();
+    window.addEventListener('resize', setAppH);
+    window.addEventListener('orientationchange', setAppH);
+
+    /* 2) Support dynamic resizing if the inner app posts its content height */
     window.addEventListener('message', (ev) => {
-      const d = ev.data || {};
+      const d = ev?.data || {};
       if (d.type === 'GAS_APP_HEIGHT' && Number.isFinite(d.height)) {
-        const px = Math.max(400, Math.min(d.height, 5000));
+        const px = Math.max(400, Math.min(d.height, 5000)); // clamp for safety
         iframe.style.height = px + 'px';
         document.documentElement.style.setProperty('--app-h', px + 'px');
       }
     });
 
-    // Ask child to recompute on resize/orientation changes
-    const request = () => iframe.contentWindow?.postMessage(
-      { type: 'REQUEST_GAS_APP_HEIGHT' },
-      '*'
-    );
-    window.addEventListener('resize', request);
-    window.addEventListener('orientationchange', request);
+    /* 3) Ask the child to re-measure on changes (if you add a listener inside) */
+    const requestHeight = () => iframe.contentWindow?.postMessage({ type: 'REQUEST_GAS_APP_HEIGHT' }, '*');
+    window.addEventListener('resize', requestHeight);
+    window.addEventListener('orientationchange', requestHeight);
+    window.addEventListener('load', () => {
+      setTimeout(requestHeight, 300);  // nudge once after load
+    });
   </script>
 </body>
 </html>
