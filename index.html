@@ -2,105 +2,19 @@
 <html lang="en">
 <head>
   <meta charset="utf-8"/>
-  <!-- Important: strict mobile viewport to stop auto-zooming and width jumps -->
-  <meta name="viewport"
-        content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
-  <meta name="theme-color" content="#000000" />
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <title>JDB Spin Masters</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
   <style>
-    :root{ --app-h: 100svh; }
-
-    /* Prevent mobile text inflation (key for iframe consistency) */
-    html, body, * {
-      -webkit-text-size-adjust: 100% !important;
-      text-size-adjust: 100% !important;
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    html, body{
-      margin:0;
-      height:100%;
-      background:#000;
-      color:#fff;
-      font-family:'Inter','Trebuchet MS',system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
-    }
-
-    .page{
-      min-height:100%;
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      background-image:linear-gradient(45deg, rgba(255,255,255,.02), rgba(128,128,128,.02));
-      padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
-    }
-
-    /* Keep the iframe content aligned with your 1200px layout */
-    .frame-wrap{
-      width:100%;
-      max-width:1200px;
-      height:var(--app-h);
-      box-sizing:border-box;
-      padding:0 20px 20px;
-    }
-
-    iframe#gas{
-      display:block;
-      width:100%;
-      height:100%;
-      border:0;
-      background:#000;
-      border-radius:10px;
-    }
-
-    @media (max-width:600px){
-      .frame-wrap{ padding:0 12px 12px; }
-      iframe#gas{ border-radius:8px; }
-    }
+    html,body{height:100%;margin:0;background:#000}
+    iframe{border:0;width:100vw;height:100vh;display:block;background:#000}
   </style>
 </head>
 <body>
-  <div class="page">
-    <div class="frame-wrap">
-      <iframe
-        id="gas"
-        title="JDB Spin Masters"
-        src="https://script.google.com/macros/s/AKfycby11IrW8_nfgTalKTG61yVAiNM95WXCEJ7HANleV17R_YH4dCvPK66Q2_fQUhAKXcSuwg/exec"
-        referrerpolicy="no-referrer"
-        allow="clipboard-read; clipboard-write; fullscreen *"
-        loading="eager"
-      ></iframe>
-    </div>
-  </div>
-
-  <script>
-    // Use visual viewport so 100vh bugs on iOS don't bite
-    function setAppHeight(){
-      const vh = (window.visualViewport && window.visualViewport.height) || window.innerHeight;
-      document.documentElement.style.setProperty('--app-h', vh + 'px');
-    }
-    setAppHeight();
-    window.addEventListener('resize', setAppHeight);
-    window.addEventListener('orientationchange', setAppHeight);
-
-    // Respect child-reported height from GAS (if it posts)
-    const iframe = document.getElementById('gas');
-    window.addEventListener('message', (ev) => {
-      const d = ev.data || {};
-      if (d.type === 'GAS_APP_HEIGHT' && Number.isFinite(d.height)) {
-        const px = Math.max(400, Math.min(d.height, 5000));
-        iframe.style.height = px + 'px';
-        document.documentElement.style.setProperty('--app-h', px + 'px');
-      }
-    });
-
-    // Ask child to recompute on load/resize
-    function requestChildSize(){
-      try { iframe.contentWindow && iframe.contentWindow.postMessage({type:'REQUEST_GAS_APP_HEIGHT'}, '*'); } catch(e){}
-    }
-    iframe.addEventListener('load', requestChildSize);
-    window.addEventListener('resize', requestChildSize);
-    window.addEventListener('orientationchange', requestChildSize);
-  </script>
+  <iframe
+    src="https://script.google.com/macros/s/AKfycby11IrW8_nfgTalKTG61yVAiNM95WXCEJ7HANleV17R_YH4dCvPK66Q2_fQUhAKXcSuwg/exec"
+    referrerpolicy="no-referrer"
+    sandbox="allow-scripts allow-same-origin"
+    allow="clipboard-read; clipboard-write"
+  ></iframe>
 </body>
 </html>
