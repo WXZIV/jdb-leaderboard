@@ -1,200 +1,40 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1, viewport-fit=cover"
-  />
-  <meta name="color-scheme" content="dark light" />
-  <title>JDB Spin Masters – Embedded Leaderboard</title>
-  <meta
-    name="description"
-    content="Embedded JDB Spin Masters leaderboard (Apps Script web app) with auto-resize and no scrollbars."
-  />
-
-  <!-- Basic, sleek styling for a neutral host shell -->
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+  <title>JDB Spin Masters</title>
   <style>
-    :root {
-      --bg: #0b0b0b;
-      --fg: #f6f6f6;
-      --accent: #ff3b30;
-      --glow: 0 0 24px rgba(255, 59, 48, 0.28);
-      --maxw: 1200px;
-      --radius: 14px;
-    }
-    * { box-sizing: border-box; }
     html, body {
       height: 100%;
       margin: 0;
-      background: radial-gradient(1200px 600px at 50% -10%, rgba(255,59,48,.08), transparent 40%) , var(--bg);
-      color: var(--fg);
-      font: 600 16px/1.45 system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";
-    }
-    .wrap {
-      max-width: var(--maxw);
-      margin: 0 auto;
-      padding: 24px clamp(12px, 4vw, 28px) 40px;
-    }
-    .brand {
-      display: grid;
-      grid-template-columns: 1fr;
-      justify-items: center;
-      gap: 6px;
-      margin: 18px 0 14px;
-      text-align: center;
-    }
-    .brand h1 {
-      margin: 0;
-      font-size: clamp(18px, 3.8vw, 24px);
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
-      background: linear-gradient(90deg, #ff0000, #ffd700, #ffa500);
-      -webkit-background-clip: text;
-      background-clip: text;
-      color: transparent;
-      text-shadow: 0 0 20px rgba(255, 0, 0, 0.25), 0 0 22px rgba(255, 215, 0, 0.25);
-    }
-    .frame-shell {
-      position: relative;
-      border-radius: var(--radius);
-      background: linear-gradient(135deg, #1a1a1a, #2a2a2a);
-      box-shadow: 0 20px 60px rgba(0,0,0,.5), var(--glow);
-      border: 1px solid rgba(255, 165, 0, .45);
-      overflow: hidden; /* no scrollbars on shell */
-      min-height: 560px; /* CLS-safe initial */
+      background: #000;
+      overflow: hidden; /* no host scrollbars */
     }
     iframe {
-      display: block;
-      width: 100%;
-      height: 720px;         /* initial; updated via postMessage */
       border: 0;
-      background: transparent;
+      width: 100vw;
+      height: 100vh;
+      display: block;
+      background: #000;
+      transform-origin: top left; /* needed for mobile scaling */
     }
-
-    /* Loader while waiting for the first size message */
-    .loader {
-      position: absolute;
-      inset: 0;
-      display: grid;
-      place-items: center;
-      pointer-events: none;
-      user-select: none;
-      background:
-        radial-gradient(600px 240px at 50% 0%, rgba(255,215,0,.06), transparent 40%),
-        linear-gradient(135deg, rgba(255,255,255,.04), rgba(255,255,255,0));
-      transition: opacity .35s ease;
+    /* Mobile: zoom out so the full desktop leaderboard fits */
+    @media (max-width: 768px) {
+      iframe {
+        transform: scale(0.5);
+        width: 200vw;   /* expand back after scale */
+        height: 200vh;
+      }
     }
-    .loader.hidden { opacity: 0; }
-    .spinner {
-      width: 56px; height: 56px;
-      border-radius: 50%;
-      border: 3px solid rgba(255,255,255,.25);
-      border-top-color: #ffd700;
-      animation: spin 1s linear infinite;
-      box-shadow: 0 0 18px rgba(255,215,0,.35), 0 0 8px rgba(255,0,0,.25) inset;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    .footer {
-      margin-top: 14px;
-      font-weight: 500;
-      font-size: 13px;
-      color: #bdbdbd;
-      text-align: center;
-      opacity: .85;
-    }
-    .footer a {
-      color: #ffd36b;
-      text-decoration: none;
-    }
-    .footer a:hover { text-decoration: underline; }
   </style>
 </head>
 <body>
-  <main class="wrap">
-    <div class="brand" aria-hidden="true">
-      <h1>JDB Spin Masters</h1>
-    </div>
-
-    <section class="frame-shell" id="jdb-shell">
-      <!-- Your Apps Script Web App -->
-      <iframe
-        id="jdb-embed"
-        title="JDB Spin Masters Leaderboard"
-        src="https://script.google.com/macros/s/AKfycbwTi0lGht8mv1vi8hTZ-AghArRLgmlyfmU-hagv4FNgxgvLVXMayJs3F-KREby7Mjc9Hw/exec"
-        scrolling="no"
-        loading="lazy"
-        allowtransparency="true"
-        referrerpolicy="no-referrer-when-downgrade"
-      ></iframe>
-
-      <!-- Nice loader while waiting for child's first size postMessage -->
-      <div class="loader" id="jdb-loader" aria-hidden="true">
-        <div class="spinner" role="status" aria-label="Loading"></div>
-      </div>
-    </section>
-
-    <p class="footer">
-      Embedded via <code>&lt;iframe&gt;</code>. Auto-resizes with <code>postMessage</code>.
-    </p>
-  </main>
-
-  <script>
-    (function () {
-      // ===== CONFIG =====
-      const MAX_HEIGHT = 6000;   // hard cap against runaway growth
-      const MIN_HEIGHT = 400;    // small screens safety
-      const TRANSITION_MS = 140; // smooth adjust
-
-      const iframe = document.getElementById('jdb-embed');
-      const loader = document.getElementById('jdb-loader');
-
-      // Add a smooth height transition (CSS inline to avoid forcing user CSS)
-      iframe.style.transition = `height ${TRANSITION_MS}ms ease`;
-
-      // Optional: allow manual override via URL ?h=1200
-      const hOverride = (() => {
-        const m = location.search.match(/[?&]h=(\d{2,5})/);
-        return m ? Math.max(MIN_HEIGHT, Math.min(+m[1], MAX_HEIGHT)) : null;
-      })();
-      if (hOverride) iframe.style.height = hOverride + 'px';
-
-      // Message listener (expects the child to send { __JDB_EMBED__: true, type:'size', height, width })
-      function onMessage(e) {
-        const d = e.data;
-        if (!d || d.__JDB_EMBED__ !== true || d.type !== 'size') return;
-
-        const newH = Math.max(MIN_HEIGHT, Math.min(Number(d.height) || 0, MAX_HEIGHT));
-        if (newH) {
-          iframe.style.height = newH + 'px';
-          if (loader && !loader.classList.contains('hidden')) {
-            loader.classList.add('hidden');
-            setTimeout(() => loader.remove(), 400);
-          }
-        }
-      }
-      window.addEventListener('message', onMessage, false);
-
-      // If no message arrives (child not patched yet), keep a usable default
-      // and hide loader after a grace period so the page isn't "stuck"
-      setTimeout(() => {
-        if (loader && !loader.classList.contains('hidden')) {
-          loader.classList.add('hidden');
-          setTimeout(() => loader.remove(), 400);
-        }
-      }, 2500);
-
-      // Optional: forward viewport changes to child (in case it listens)
-      function pingChild() {
-        try {
-          iframe.contentWindow && iframe.contentWindow.postMessage({ __JDB_EMBED__: true, type: 'ping' }, '*');
-        } catch (e) {}
-      }
-      window.addEventListener('resize', () => { pingChild(); }, { passive: true });
-      window.addEventListener('orientationchange', () => { pingChild(); }, { passive: true });
-    })();
-  </script>
+  <iframe
+    src="https://script.google.com/macros/s/AKfycbwTi0lGht8mv1vi8hTZ-AghArRLgmlyfmU-hagv4FNgxgvLVXMayJs3F-KREby7Mjc9Hw/exec"
+    referrerpolicy="no-referrer"
+    sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-popups-to-escape-sandbox"
+    allow="clipboard-read; clipboard-write">
+  </iframe>
 </body>
 </html>
-
