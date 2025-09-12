@@ -2,49 +2,19 @@
 <html lang="en">
 <head>
   <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
-  <meta name="format-detection" content="telephone=no">
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <title>JDB Spin Masters</title>
   <style>
-    :root{ --vh:100dvh; }
-    @supports(height:100svh){ :root{ --vh:100svh; } }
-
-    html,body{
-      height:100%;
-      margin:0;
-      background:#000;
-      overflow:hidden; /* no outer scrollbars */
-      -webkit-text-size-adjust:100%;
-      text-size-adjust:100%;
-      font:14px/1.3 system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial, sans-serif;
-    }
-    .frame{
-      position:fixed;
-      inset: env(safe-area-inset-top) env(safe-area-inset-right)
-             env(safe-area-inset-bottom) env(safe-area-inset-left);
-      width: calc(100% - env(safe-area-inset-left) - env(safe-area-inset-right));
-      height: calc(var(--vh) - env(safe-area-inset-top) - env(safe-area-inset-bottom));
-      display:block;
-      border:0;
-      background:#000;
-    }
+    html,body{height:100%;margin:0;background:#000}
+    iframe{border:0;width:100vw;height:100vh;display:block;background:#000}
   </style>
 </head>
 <body>
   <iframe
-    class="frame"
-    src="https://script.google.com/macros/s/AKfycbyexpEh4FpQhS_SHCizT8NbBywbuyCM9XZnF-CoyI6H1ZBVm5dypNDOlWu0N-RAK9pr6Q/exec?v=20250912"
-    sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox"
+    src="https://script.google.com/macros/s/AKfycbyexpEh4FpQhS_SHCizT8NbBywbuyCM9XZnF-CoyI6H1ZBVm5dypNDOlWu0N-RAK9pr6Q/exec"
     referrerpolicy="no-referrer"
+    sandbox="allow-scripts allow-same-origin"
     allow="clipboard-read; clipboard-write"
-    loading="eager">
-  </iframe>
-
-  <script>
-    // fix 100vh on mobile address bar show/hide
-    const setVH=()=>document.documentElement.style.setProperty('--vh', window.innerHeight+'px');
-    setVH(); addEventListener('resize', setVH);
-  </script>
+  ></iframe>
 </body>
 </html>
-
